@@ -1,19 +1,19 @@
-SELECT ---employee.id as employee_id,
-  employee.sort_name AS ContactdisplayName,
-  --contact_id_b as new_employer_id,
-  employer.sort_name AS EmployerOrganizationName,
-  COUNT (CASE.Id) AS NoOfOngoingCase
---employee.employer_id 
-FROM civicrm_relationship
-JOIN civicrm_contact AS employer
-  ON (civicrm_relationship.contact_id_b = employer.id)
-JOIN civicrm_contact AS employee
-  ON (civicrm_relationship.contact_id_a = employee.id)
-JOIN civicrm_case_contact AS Casecontact
-  ON (Casecontact.contact_id = employee.id)
-JOIN civicrm_case AS cases
-  ON (Cases.Id = Casecontact.case_id
+SELECT
+  contact.display_name AS ContactDisplayName,
+  Employer.organization_name AS EmployerOrgnizationName,
+  COUNT(CaseContact.contact_id) AS NumberOfOngoingCase
+FROM civicrm_contact AS contact
+INNER JOIN civicrm_case_contact AS CaseContact
+  ON (CaseContact.contact_id = contact.Id)
+INNER JOIN civicrm_case AS Cases
+  ON (Cases.Id = CaseContact.case_id
   AND Label = 'ongoing')
-
-  AND contact_id_b IS NOT NULL
-  AND employee.employer_id IS NULL
+INNER JOIN civicrm_relationship AS ContactRelationship
+  ON (ContactRelationship.contact_id_a = contact.Id)
+INNER JOIN civicrm_relationship_type AS RelationshipType
+  ON (RelationshipType.Id = ContactRelationship.relationship_type_id
+  AND name_a_b = 'Employer')
+INNER JOIN civicrm_contact AS Employer
+  ON (Employer.Id = ContactRelationship.contact_id_b)
+GROUP BY contact.display_name,
+         Employer.organization_name
